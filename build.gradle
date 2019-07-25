@@ -1,6 +1,7 @@
 plugins {
 	id 'org.springframework.boot' version '2.1.6.RELEASE'
 	id 'java'
+	id 'org.hidetake.ssh' version '2.10.1'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -9,6 +10,25 @@ group = 'com.mysys.loadbalancer'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
+remotes {
+		awsServer {
+		host = 'ec2-34-221-74-184.us-west-2.compute.amazonaws.com'
+		user = 'ec2-user'
+		identity = file('/Users/joeylam/dev/keys/mysys-first-aws.pem')
+	}
+}
+
+task deploy {
+	doLast {
+		ssh.run {
+			session(remotes.awsServer) {
+				put from: '/Users/joeylam/dev/srcjava/eurekaBalancer/build/libs/eurekaBalancer-0.0.1-SNAPSHOT.jar', into: '//home/ec2-user/javaapp/eurekabalancer/libs/'
+				execute 'ls -l /home/ec2-user/javaapp/eurekabalancer/libs/'
+//				execute 'sudo java -jar /home/ec2-user/javaapp/eurekabalancer/libs/eurekaBalancer-0.0.1-SNAPSHOT.jar'
+			}
+		}
+	}
+}
 
 repositories {
 	mavenCentral()
